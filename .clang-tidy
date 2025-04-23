@@ -17,6 +17,7 @@ Checks:
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-special-member-functions,
   -readability-inconsistent-declaration-parameter-name,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
 CheckOptions:
   # 配置认知复杂度（函数的复杂度阈值）
   - key: readability-function-cognitive-complexity.Threshold
