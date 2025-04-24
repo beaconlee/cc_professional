@@ -46,10 +46,12 @@ main(int /*argc*/, char **argv)
   INFO << "sizeof(str_a):" << sizeof(str_a);
 
   auto *copy1 = copy_string(str1);
+
   WARNING << copy1;
+  delete copy1;
 
   auto *copy2 = append_str(str1, str2, str3);
   WARNING << copy2;
-
+  delete copy2;
   return 0;
 }
