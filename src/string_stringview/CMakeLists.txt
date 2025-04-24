@@ -14,10 +14,12 @@ set(CMAKE_BUILD_TYPE Debug)
 # 定义可执行目标
 add_executable(c_str src/c_str.cc)
 add_executable(string_literial src/string_literial.cc)
+add_executable(string src/string.cc)
 
 set(EXECUTABLES
   c_str
   string_literial
+  string
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
