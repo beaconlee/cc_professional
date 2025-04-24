@@ -20,6 +20,15 @@ set(EXECUTABLES
   string_literial
 )
 
+foreach(execu IN ITEMS ${EXECUTABLES})
+  target_include_directories(${execu} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+  )
+  target_link_libraries(${execu} PUBLIC
+    common
+  )
+endforeach()
+
 
 # 指定本地头文件目录
 target_include_directories(c_str PUBLIC
