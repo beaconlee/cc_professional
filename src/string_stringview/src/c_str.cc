@@ -25,6 +25,8 @@ int
 main(int /*argc*/, char **argv)
 {
   logger::Logger::Init(argv[0]);
+  // 字符串字面量具有静态存储期，在程序整个生命周期内都存在，因此const char*指向的字面量是安全的。
+  // 下面都是字符串字面量
   const char *str1{"beacon"};
   const char *str2{"uan"};
   const char *str3{"bquan"};
