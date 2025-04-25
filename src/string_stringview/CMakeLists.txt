@@ -16,12 +16,14 @@ add_executable(c_str src/c_str.cc)
 add_executable(string_literial src/string_literial.cc)
 add_executable(string src/string.cc)
 add_executable(convert src/convert_string_number.cc)
+add_executable(sv src/string_view.cc)
 
 set(EXECUTABLES
   c_str
   string_literial
   string
   convert
+  sv
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
