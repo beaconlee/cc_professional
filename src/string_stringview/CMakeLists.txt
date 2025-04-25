@@ -15,11 +15,13 @@ set(CMAKE_BUILD_TYPE Debug)
 add_executable(c_str src/c_str.cc)
 add_executable(string_literial src/string_literial.cc)
 add_executable(string src/string.cc)
+add_executable(convert src/convert_string_number.cc)
 
 set(EXECUTABLES
   c_str
   string_literial
   string
+  convert
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
