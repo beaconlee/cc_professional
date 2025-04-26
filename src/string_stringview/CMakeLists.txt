@@ -17,6 +17,7 @@ add_executable(string_literial src/string_literial.cc)
 add_executable(string src/string.cc)
 add_executable(convert src/convert_string_number.cc)
 add_executable(sv src/string_view.cc)
+add_executable(sformat src/string_format.cc)
 
 set(EXECUTABLES
   c_str
@@ -24,6 +25,7 @@ set(EXECUTABLES
   string
   convert
   sv
+  sformat
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
