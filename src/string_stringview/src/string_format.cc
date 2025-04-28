@@ -1,8 +1,10 @@
 #include "log.hh"
 
 #include <format>
+#include <iostream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 
 void
@@ -111,6 +113,250 @@ type()
   delete p;
 }
 
+class KeyValue
+{
+public:
+  KeyValue(std::string_view key, int value)
+    : key_(key)
+    , value_(value)
+  {}
+
+  [[nodiscard]] std::string_view
+  get_key() const
+  {
+    return key_;
+  }
+
+  [[nodiscard]] int
+  get_value() const
+  {
+    return value_;
+  }
+
+private:
+  std::string key_;
+  int value_;
+};
+
+template <>
+class std::formatter<KeyValue>
+{
+public:
+  // 解析格式说明符   format specifier
+  // 在 std::format 的格式字符串中, ({:}, {:2}), {} 内部的 : 及其后面的内容是格式说明符
+  //  parse 读取 格式说明符,提取相关信息, 并将其存储, 以供后续的 format函数使用
+  ////////////////////////////////////////////////////////////////
+  // parse 接收一个 format_parse_context, 通常简写成ctx
+  // ctx.begin(), 指向当前格式说明符中的起始迭代器,通常是 : 后面的第一个字符.
+  // ctx.end(), 指向当前格式说明符中的结束迭代器,通常是 } 字符
+  // 格式字符串的范围是 [ctx.begin(), ctx.end()]
+  constexpr auto
+  parse(format_parse_context &context)
+  {
+    const auto *iter{context.begin()};
+    const auto *const end{context.end()};
+
+    if(iter == end || *iter == '}')
+    {
+      type_ = OutputType::KeyAndValue;
+      return iter;
+    }
+    switch(*iter)
+    {
+      case 'a': // {:a}
+        type_ = OutputType::KeyOnly;
+        break;
+      case 'v': // {:v}
+        type_ = OutputType::ValueOnly;
+        break;
+      case 'c': // {:c}
+        type_ = OutputType::KeyAndValue;
+        break;
+      default:
+        throw format_error{"Invalid keyvalue format specifer."};
+    }
+
+    ++iter;
+    if(iter != end && *iter != '}')
+    {
+      throw format_error{"Invalid keyvalue format specifer."};
+    }
+    return iter;
+  }
+
+  // 格式化 KeyValue 对象
+  template <typename FormatContext>
+  auto
+  format(const KeyValue &kv, FormatContext &context) const
+  {
+    switch(type_)
+    {
+      using enum OutputType;
+      case KeyOnly:
+        return format_to(context.out(), "{}", kv.get_key());
+      case ValueOnly:
+        return format_to(context.out(), "{}", kv.get_value());
+      default:
+        return format_to(context.out(), "{}-{}", kv.get_key(), kv.get_value());
+    }
+  }
+
+private:
+  enum class OutputType
+  {
+    KeyOnly,
+    ValueOnly,
+    KeyAndValue,
+  };
+
+  OutputType type_{OutputType::KeyAndValue};
+};
+
+class Beacon
+{
+public:
+  Beacon(std::string name, uint age, std::string dream, uint score)
+    : name_(std::move(name))
+    , age_(age)
+    , dream_(std::move(dream))
+    , score_(score)
+  {}
+
+  [[nodiscard]] std::string
+  get_name() const
+  {
+    return name_;
+  }
+
+  [[nodiscard]] uint
+  get_age() const
+  {
+    return age_;
+  }
+
+  [[nodiscard]] std::string
+  get_dream() const
+  {
+    return dream_;
+  }
+
+  [[nodiscard]] uint
+  get_score() const
+  {
+    return score_;
+  }
+
+private:
+  std::string name_{"beacon"};
+  uint age_{17};
+  std::string dream_{"program"};
+  uint score_{71};
+};
+
+template <>
+class std::formatter<Beacon>
+{
+public:
+  constexpr auto
+  parse(format_parse_context &ctx)
+  {
+    // ctx 是 {:} 中冒号后面的内容, 不包括冒号
+    const auto *itr{ctx.begin()};
+    const auto *const end{ctx.end()};
+    if(itr == end || *itr == '}')
+    {
+      INFO << "{:} is empty";
+      format_ |= 0b1111;
+      return itr;
+    }
+
+    // 这里的问题是,不能使用 itr != end 来进行判断
+    // 使用 c++23 还是不能编译过
+    // while(itr != end)
+    while(*itr != '}')
+    {
+      switch(*itr)
+      {
+        case 'n':
+          format_ |= 0b1;
+          break;
+        case 'a':
+          format_ |= 0b10;
+          break;
+        case 'd':
+          format_ |= 0b100;
+          break;
+        case 's':
+          format_ |= 0b1000;
+          break;
+        default:
+          // throw invalid_argument("invalid specile format!");
+          throw format_error{"Invalid beacon format specifer."};
+          break;
+      }
+      ++itr;
+    }
+
+
+    // for(; itr != end && *itr != '}'; ++itr)
+    // {
+    //   switch(*itr)
+    //   {
+    //     case 'n':
+    //       format_ |= 0b1;
+    //       break;
+    //     case 'a':
+    //       format_ |= 0b10;
+    //       break;
+    //     case 'd':
+    //       format_ |= 0b100;
+    //       break;
+    //     case 's':
+    //       format_ |= 0b1000;
+    //       break;
+    //     default:
+    //       // throw invalid_argument("invalid specile format!");
+    //       throw format_error{"Invalid beacon format specifer."};
+    //       break;
+    //   }
+    // }
+
+    if(itr != end && *itr != '}')
+    {
+      throw format_error{"Invalid beacon format specifer."};
+    }
+    return itr;
+  }
+
+
+  template <typename FormatContext>
+  auto
+  format(const Beacon &bon, FormatContext &ctx) const
+  {
+    std::stringstream ss;
+    if(format_ & 0b1)
+    {
+      ss << "name:" << bon.get_name();
+    }
+    if(format_ & 0b10)
+    {
+      ss << ", age:" << bon.get_age();
+    }
+    if(format_ & 0b100)
+    {
+      ss << ", dream:" << bon.get_dream();
+    }
+    if(format_ & 0b1000)
+    {
+      ss << ", score:" << bon.get_score();
+    }
+
+    return format_to(ctx.out(), "{}", ss.str());
+  }
+
+private:
+  uint8_t format_{0b0};
+};
 
 int
 main(int /*argc*/, char **argv)
@@ -122,5 +368,13 @@ main(int /*argc*/, char **argv)
   precision();
   alternate();
   type();
+
+  KeyValue kv{"beacon", 17};
+  // INFO << "kv:{:a}" << std::format("{:a}", kv);
+  std::cout << std::format("{}", kv) << "\n"; // 应输出 "test-42"
+
+
+  Beacon bon{"beacon", 17, "qing", 99};
+  std::cout << std::format("{:nads}\n", bon);
   return 0;
 }
