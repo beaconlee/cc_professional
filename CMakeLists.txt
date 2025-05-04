@@ -5,3 +5,5 @@ find_package (glog 0.7.1 REQUIRED)
 
 add_subdirectory(src/common)
 add_subdirectory(src/string_stringview)
+add_subdirectory(src/io)
+add_subdirectory(src/utils)
