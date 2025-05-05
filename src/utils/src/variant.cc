@@ -23,6 +23,9 @@
 using Literal =
     std::variant<std::monostate, std::string, double, bool, std::nullptr_t>;
 
+
+// 一个新的理解, 下面的这个函数对象, 也可以使用 lambda 和 auto 类型自动推导来完成
+// std::visit([](const auto &value) { std::cout << value; }, literal);
 class LiteralVisit
 {
 public:
