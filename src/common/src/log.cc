@@ -1,5 +1,6 @@
 #include "log.hh"
 #include <iomanip>
+#include <map>
 
 
 namespace logger
@@ -26,16 +27,35 @@ prefix_formatter(std::ostream &s,
   std::ios_base::fmtflags orig_flags = s.flags();
   char orig_fill = s.fill();
 
-  // 格式化日志级别（左对齐，宽度6）
-  s << std::left << std::setw(7) << std::setfill(' ')
-    << google::GetLogSeverityName(m.severity()) << ' ';
+  // 定义日志级别到短名称的映射
+  static const std::map<google::LogSeverity, std::string> severity_short_names =
+      {{google::GLOG_INFO, "INFO"},
+       {google::GLOG_WARNING, "WARN"},
+       {google::GLOG_ERROR, "ERR"},
+       {google::GLOG_FATAL, "FAT"}};
+
+  // 获取短名称，默认为原始名称的前3个字符
+  std::string severity_name = google::GetLogSeverityName(m.severity());
+  auto it = severity_short_names.find(m.severity());
+  if(it != severity_short_names.end())
+  {
+    severity_name = it->second;
+  }
+  else
+  {
+    severity_name = severity_name.substr(0, 3); // 截取前3个字符
+  }
+
+  // 格式化日志级别（左对齐，宽度4）
+  s << std::left << std::setw(4) << std::setfill(' ') << severity_name << ' ';
 
   // 格式化时间（右对齐）
   s << std::right << std::setw(4) << 1900 + m.time().year() << std::setw(2)
-    << 1 + m.time().month() << std::setw(2) << m.time().day() << ' '
-    << std::setw(2) << std::setfill('0') << m.time().hour() << ':'
-    << std::setw(2) << std::setfill('0') << m.time().min() << ':'
-    << std::setw(2) << std::setfill('0') << m.time().sec() << ' ';
+    << std::setfill('0') << 1 + m.time().month() << std::setw(2)
+    << std::setfill('0') << m.time().day() << ' ' << std::setw(2)
+    << std::setfill('0') << m.time().hour() << ':' << std::setw(2)
+    << std::setfill('0') << m.time().min() << ':' << std::setw(2)
+    << std::setfill('0') << m.time().sec() << ' ';
 
   // 格式化文件名和行号
   s << m.basename() << ':' << m.line() << "]";
