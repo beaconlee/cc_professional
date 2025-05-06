@@ -138,6 +138,9 @@ private:
   int value_;
 };
 
+// 主要是重载两个函数 parse 和 formatter
+//    其中 parse 用于解析格式说明符{:}，:后面的内容
+//        formatter 用于根据格式说明符来进行格式化输出
 template <>
 class std::formatter<KeyValue>
 {
@@ -150,6 +153,7 @@ public:
   // ctx.begin(), 指向当前格式说明符中的起始迭代器,通常是 : 后面的第一个字符.
   // ctx.end(), 指向当前格式说明符中的结束迭代器,通常是 } 字符
   // 格式字符串的范围是 [ctx.begin(), ctx.end()]
+  // 返回一个迭代器，指向解析结束后的位置（通常是格式化字符串中未处理的部分）。
   constexpr auto
   parse(format_parse_context &context)
   {
@@ -371,6 +375,18 @@ main(int /*argc*/, char **argv)
 
   KeyValue kv{"beacon", 17};
   // INFO << "kv:{:a}" << std::format("{:a}", kv);
+
+  // std::format 返回的是一个 string
+  // format_to(), 直接将格式化的结果写入到提供的迭代器中，效率更高，
+  // template <typename OutputIt, typename... Args>
+  // OutputIt format_to(OutputIt out, std::string_view fmt, const Args&... args);
+  // out: 输出迭代器，表示要将格式化后的字符串写入的位置
+  // fmt: 待格式化的字符串
+  // args: 要格式化的参数,用于替换格式化字符串中的占位符
+  // OutputIt: 将字符串写入后迭代器的位置
+  // OutputIt: 返回更新后的迭代器, 指向写入完成后的位置
+  //! 其实这里自己的问题是不清楚写入迭代器的是什么,以及其使用...
+  // todo 但是这里不做展开了, 后面再继续展开
   std::cout << std::format("{}", kv) << "\n"; // 应输出 "test-42"
 
 
