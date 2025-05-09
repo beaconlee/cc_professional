@@ -13,9 +13,11 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # 定义可执行目标
 add_executable(variant src/variant.cc)
+add_executable(any src/any.cc)
 
 set(EXECUTABLES
   variant
+  any
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
