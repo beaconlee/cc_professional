@@ -38,6 +38,82 @@ process_any(const std::any &a)
   }
 }
 
+struct ValueVisitor
+{
+  virtual void
+  visit(int value) = 0;
+  virtual void
+  visit(const std::string &value) = 0;
+  virtual void
+  visit(const Beacon &value) = 0;
+};
+
+struct PrintVisitor : ValueVisitor
+{
+  void
+  visit(int value) override
+  {
+    std::cout << std::format("Int: {}\n", value);
+  }
+  void
+  visit(const std::string &value) override
+  {
+    std::cout << std::format("String: {}\n", value);
+  }
+  void
+  visit(const Beacon &value) override
+  {
+    std::cout << "Beacon object\n";
+  }
+};
+
+void
+process_any(const std::any &a, ValueVisitor &visitor)
+{
+  if(a.type() == typeid(int))
+  {
+    visitor.visit(std::any_cast<int>(a));
+  }
+  else if(a.type() == typeid(std::string))
+  {
+    visitor.visit(std::any_cast<std::string>(a));
+  }
+  else if(a.type() == typeid(Beacon))
+  {
+    visitor.visit(std::any_cast<Beacon>(a));
+  }
+  else
+  {
+    std::cout << std::format("Unknown type: {}\n", a.type().name());
+  }
+}
+
+// 如果类型集合事先已知, 那么可以使用 variant 进行替代
+using VarType = std::variant<int, std::string, Beacon>;
+
+void
+print_variant(const VarType &v)
+{
+  std::visit(
+      [](const auto &value)
+      {
+        using T = std::decay_t<decltype(value)>;
+        if constexpr(std::is_same_v<T, int>)
+        {
+          std::cout << std::format("Int: {}\n", value);
+        }
+        else if constexpr(std::is_same_v<T, std::string>)
+        {
+          std::cout << std::format("String: {}\n", value);
+        }
+        else if constexpr(std::is_same_v<T, Beacon>)
+        {
+          std::cout << "Beacon object\n";
+        }
+      },
+      v);
+}
+
 int
 main()
 {
@@ -73,5 +149,32 @@ main()
   process_any(a);
   a = 3.14; // 未知类型
   process_any(a);
+
+
+  std::cout << "\n\n-------------------\n";
+  PrintVisitor visitor;
+  std::any a2 = 42;
+  process_any(a2, visitor);
+  a2 = "beacon"s;
+  process_any(a2, visitor);
+  a2 = Beacon();
+  process_any(a2, visitor);
+
+  std::cout << "\n\n-------------------\n";
+
+  VarType v = 42;
+  print_variant(v);
+  v = "beacon"s;
+  print_variant(v);
+  v = Beacon();
+  print_variant(v);
   return 0;
 }
+
+/*
+如果你的需求是真正的动态类型处理（例如支持运行时添加新类型），std::any 可能不是最佳选择。你可以考虑以下方法：
+
+自定义类型系统：实现一个自定义的类型注册机制，将类型与处理函数关联起来，类似于动态语言（如 Python）的反射机制。
+第三方库：使用支持运行时反射的库（如 Boost.TypeErasure 或其他反射库）。
+脚本语言嵌入：将动态类型处理的任务交给嵌入的脚本语言（如 Lua 或 Python）。
+*/
