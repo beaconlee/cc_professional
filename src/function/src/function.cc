@@ -25,6 +25,7 @@ process_matches(
     const match_func &match,
     const match_handler &handler)
 {
+  std::cout << std::format("in process_matches\n");
   if(s1.size() != s2.size())
   {
     throw std::invalid_argument("s1 and s2 must have equal size");
@@ -46,11 +47,12 @@ process_matches(
 // 使用 temp, 接收任意可调用对象
 template <typename MatchFunc, typename HandlerFunc>
 void
-find_match_temp(std::span<int> s1,
-                std::span<int> s2,
-                const MatchFunc &match,
-                const HandlerFunc &handler)
+process_matches_temp(std::span<const int> s1,
+                     std::span<const int> s2,
+                     const MatchFunc &match,
+                     const HandlerFunc &handler)
 {
+  std::cout << std::format("in process_matches template\n");
   if(s1.size() != s2.size())
   {
     throw std::invalid_argument("s1 and s2 must have equal size");
@@ -112,11 +114,11 @@ main()
 
   // 由于函数对象本身也是一个对象， 因此可以使用模板来表示待传入的函数对象
   std::cout << std::format("function template-----------------------------\n");
-  // find_match_temp<match_func, match_handler>(vec1, vec2, match, print);
+  // process_matches_temp<match_func, match_handler>(vec1, vec2, match, print);
   // 可以自动推导出类型
   try
   {
-    find_match_temp(vec1, vec2, match, print);
+    process_matches_temp(vec1, vec2, match, print);
   }
   catch(std::exception &e)
   {
