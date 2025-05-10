@@ -14,10 +14,12 @@ set(CMAKE_BUILD_TYPE Debug)
 # 定义可执行目标
 add_executable(func_point src/func_point.cc)
 add_executable(function src/function.cc)
+add_executable(func_operator src/func_operator.cc)
 
 set(EXECUTABLES
   func_point
   function
+  func_operator
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
