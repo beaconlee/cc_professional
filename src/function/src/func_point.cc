@@ -85,9 +85,26 @@ process(std::span<int> s1,
 }
 
 
+class Beacon
+{
+public:
+  void
+  out() const
+  {
+    std::cout << std::format("this is Beacon::out()\n");
+  }
+};
+
+// using beacon_out = void (*Beacon::out)();
+
 int
 main()
 {
+  // 术语：回调
+  // 表示可以调用的东西，可以是函数指针，或者任何行为类似于函数指针的东西：重载了 operator() 的对象，lambda 表达式
+  // 一级函数：C++中的函数称之为一级函数，因为函数可以像普通变量那样来使用
+  // 高阶函数：C++中接收其它函数作为参数的函数，或者返回函数的函数称为高阶函数
+
   std::vector<int> vec1{1, 2, 3, 4, 5};
   std::vector<int> vec2{5, 4, 3, 2, 1};
   process(vec1, vec2, match, print_match);
@@ -102,5 +119,28 @@ main()
   ptr = match;                     // 将 match 的地址赋给 ptr
   process(vec1, vec2, ptr, print_match);
 
+  std::cout << "member function:---------------\n";
+  // 这里自己第一次看时将后面的{}当成是函数调用了，
+  // 实际上这里更应该是列表初始化
+  // 前面的是定义一个指向 Beacon 成员函数的指针
+  // 后面的 {} 表示进行了初始化的操作
+  // void (Beacon::*beacon_test)() const;
+  void (Beacon::*beacon_out)() const {&Beacon::out};
+  Beacon bea;
+  // std::cout<<bea.*beacon_out<<"\n";
+  // 之所以在 bea.*beacon_out 的外面加括号，是因为()的优先级高于*
+  // 不加括号就会变成 bea.*(beacon_out()) 的形式。
+  (bea.*beacon_out)();
+
+
+  // 也可以使用类型别名
+  std::cout << "member function, type name:---------------\n";
+  using BeaconMemPtr = void (Beacon::*)() const;
+  BeaconMemPtr bout = &Beacon::out;
+  (bea.*bout)();
+
+  std::cout << "member function, auto:---------------\n";
+  auto bout2{&Beacon::out}; // void (Beacon::*) () const
+  (bea.*bout2)();
   return 0;
 }
