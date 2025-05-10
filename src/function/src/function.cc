@@ -18,14 +18,16 @@ using match_handler = std::function<void(uint, int, int)>;
 
 // 传入函数对象， 也可以使用函数模板
 void
-find_match(std::span<int> s1,
-           std::span<int> s2,
-           const match_func &match,
-           const match_handler &handler)
+process_matches(
+    std::span<const int>
+        s1, // 将 int 修改成 const int, 以清晰的传递不会修改的意图，提高代码的安全性和可读性
+    std::span<const int> s2,
+    const match_func &match,
+    const match_handler &handler)
 {
   if(s1.size() != s2.size())
   {
-    std::cerr << "err! s1 not equal s2\n";
+    throw std::invalid_argument("s1 and s2 must have equal size");
     return;
   }
 
@@ -38,6 +40,10 @@ find_match(std::span<int> s1,
   }
 }
 
+
+// 模板参数，会比function有更小的性能损耗，优先考虑使用模板参数，除非需要funciton的类型擦除特性
+// todo 后面需要了解下 function 的类型擦除特性
+// 使用 temp, 接收任意可调用对象
 template <typename MatchFunc, typename HandlerFunc>
 void
 find_match_temp(std::span<int> s1,
@@ -47,7 +53,7 @@ find_match_temp(std::span<int> s1,
 {
   if(s1.size() != s2.size())
   {
-    std::cerr << "err! s1 not equal s2\n";
+    throw std::invalid_argument("s1 and s2 must have equal size");
     return;
   }
 
@@ -95,12 +101,29 @@ main()
   std::cout << std::format("-----------------------------\n");
   std::vector<int> vec1{1, 2, 3, 4, 5};
   std::vector<int> vec2{5, 4, 3, 2, 1};
-  find_match(vec1, vec2, match, print);
-
+  try
+  {
+    process_matches(vec1, vec2, match, print);
+  }
+  catch(std::exception &e)
+  {
+    std::cerr << std::format("get excep {}", e.what());
+  }
 
   // 由于函数对象本身也是一个对象， 因此可以使用模板来表示待传入的函数对象
   std::cout << std::format("function template-----------------------------\n");
-  find_match_temp<match_func, match_handler>(vec1, vec2, match, print);
+  // find_match_temp<match_func, match_handler>(vec1, vec2, match, print);
+  // 可以自动推导出类型
+  try
+  {
+    find_match_temp(vec1, vec2, match, print);
+  }
+  catch(std::exception &e)
+  {
+    std::cerr << std::format("get excep {}", e.what());
+  }
 
   return 0;
 }
+
+// todo 范型编程深入学习：模板元编程，约束模板
