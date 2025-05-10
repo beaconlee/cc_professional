@@ -13,9 +13,11 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # 定义可执行目标
 add_executable(func_point src/func_point.cc)
+add_executable(function src/function.cc)
 
 set(EXECUTABLES
   func_point
+  function
 )
 
 foreach(execu IN ITEMS ${EXECUTABLES})
